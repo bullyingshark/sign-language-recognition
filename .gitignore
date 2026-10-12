@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# virtual environment
+venv/
+.venv/
+
+# project data & trained models (large / regenerable — don't commit)
+# leading slash = only the top-level folder, NOT slr/data/ (that's source code)
+/data/
+/checkpoints/
+
+# Kaggle credentials - never commit secrets
+kaggle.json
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
