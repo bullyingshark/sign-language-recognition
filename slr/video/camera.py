@@ -1,8 +1,6 @@
 import numpy as np
 import cv2
 
-
-
 class VideoSource:
     def __init__(self, index: int = 0, width: int = 640, height: int = 480,
                  mirror: bool = True) -> None:
@@ -24,10 +22,10 @@ class VideoSource:
 
     def release(self) -> None:
         """Releases the camera."""
-        ...
+        self._cap.release()
 
     def __enter__(self) -> "VideoSource":
-        ...
+        return  self
 
     def __exit__(self, *exc) -> None:
-        ...
+        self.release()
