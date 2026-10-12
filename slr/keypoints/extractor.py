@@ -1,5 +1,8 @@
 import numpy as np
 import mediapipe as mp
+import cv2
+
+from slr.keypoints.features import FeatureBuilder
 
 class KeypointExtractor:
     def __init__(self, min_detection_confidence: float = 0.5,
@@ -11,13 +14,22 @@ class KeypointExtractor:
         )
 
     def process(self, frame_bgr: np.ndarray):
-        """BGR-кадр -> сырой результат MediaPipe (ещё не вектор, а объект с landmarks)."""
-        ...
+        rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+        results = self._holistic.process(rgb)
+        return results
 
     def to_vector(self, results) -> np.ndarray:
-        """Сырой результат MediaPipe -> вектор признаков через FeatureBuilder."""
-        ...
+        left = self._to_array(results.left_hand_landmarks, FeatureBuilder.HAND_POINTS)
+        right = self._to_array(results.right_hand_landmarks, FeatureBuilder.HAND_POINTS)
+        pose = self._to_array(results.pose_landmarks, FeatureBuilder.POSE_POINTS)
+
+        return FeatureBuilder.build(left, right, pose)
+
+    @staticmethod
+    def _to_array(landmark_list, n_points: int) -> np.ndarray:
+        if landmark_list is None:
+            return np.zeros((n_points, 3), dtype=np.float32)
+        return np.array([[p.x, p.y, p.z] for p in landmark_list.landmark], dtype=np.float32)
 
     def close(self) -> None:
-        """Освобождает ресурсы MediaPipe."""
-        ...
+        self._holistic.close()
