@@ -8,6 +8,7 @@ class KeypointExtractor:
     def __init__(self, min_detection_confidence: float = 0.5,
                  min_tracking_confidence: float = 0.5) -> None:
         self._holistic_module = mp.solutions.holistic
+        self._drawer = mp.solutions.drawing_utils
         self._holistic = self._holistic_module.Holistic(
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence,
@@ -30,6 +31,17 @@ class KeypointExtractor:
         if landmark_list is None:
             return np.zeros((n_points, 3), dtype=np.float32)
         return np.array([[p.x, p.y, p.z] for p in landmark_list.landmark], dtype=np.float32)
+
+    def draw(self, frame_bgr: np.ndarray, results) -> None:
+        """Draw detected landmarks onto the frame. Returns nothing — modifies frame_bgr in place."""
+        parts = (
+            (results.pose_landmarks, self._holistic_module.POSE_CONNECTIONS),
+            (results.left_hand_landmarks, self._holistic_module.HAND_CONNECTIONS),
+            (results.right_hand_landmarks, self._holistic_module.HAND_CONNECTIONS),
+        )
+        for landmarks, connections in parts:
+            if landmarks is not None:
+                self._drawer.draw_landmarks(frame_bgr, landmarks, connections)
 
     def close(self) -> None:
         self._holistic.close()
