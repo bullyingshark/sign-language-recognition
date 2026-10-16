@@ -37,3 +37,12 @@ class TemporalCNN(BaseSequenceModel):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.features(x.transpose(1, 2))  # Conv1d expects (B, F, T)
         return self.head(x.mean(dim=2))  # average over time
+
+def build_model(name: str, num_features: int, num_classes: int) -> BaseSequenceModel:
+    """Factory: create a model by architecture name."""
+    name = name.lower()
+    if name in ("lstm", "gru"):
+        return RecurrentClassifier(num_features, num_classes, rnn_type=name)
+    if name == "tcn":
+        return TemporalCNN(num_features, num_classes)
+    raise ValueError(f"Unknown architecture: {name}. Available: lstm, gru, tcn")
