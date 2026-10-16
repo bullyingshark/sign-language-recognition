@@ -47,3 +47,17 @@ class Trainer:
                 self._best_state = copy.deepcopy(self.model.state_dict())
             print(f"Epoch {epoch:3d}/{epochs} | train loss {train_loss:.3f} acc {train_acc:.3f}"
                   f" | val loss {val_loss:.3f} acc {val_acc:.3f}")
+
+    def save_checkpoint(self, path: Path, label_names: list[str],
+                        sequence_length: int, num_features: int) -> None:
+        """Save weights plus everything needed to rebuild the model later."""
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save({
+            "state_dict": self._best_state or self.model.state_dict(),
+            "model_name": self.model_name,
+            "label_names": label_names,
+            "sequence_length": sequence_length,
+            "num_features": num_features,
+            "val_acc": self.best_val_acc,
+        }, path)
