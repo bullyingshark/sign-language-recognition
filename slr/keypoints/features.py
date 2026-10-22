@@ -18,6 +18,9 @@ class FeatureBuilder:
         origin = (l_shoulder + r_shoulder) / 2
         scale = np.linalg.norm(l_shoulder[:2] - r_shoulder[:2])
 
+        if scale < 1e-6:  # shoulders not detected, normalization is impossible
+            return np.zeros(cls.vector_size(), dtype=np.float32)
+
         for arr in (left, right, pose):
             present = np.any(arr != 0, axis=1)
             arr[present] = (arr[present] - origin) / scale
