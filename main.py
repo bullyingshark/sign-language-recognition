@@ -11,6 +11,7 @@ from slr.app.realtime_app import RealtimeApp
 from slr.inference.predictor import SignPredictor
 from slr.inference.sentence import SentenceBuilder
 from slr.keypoints.extractor import KeypointExtractor
+from slr.data.collector import DatasetCollector
 
 
 def cmd_train(args, cfg: Config) -> None:
@@ -47,6 +48,13 @@ def cmd_run(args, cfg: Config) -> None:
     finally:
         extractor.close()
 
+def cmd_collect(args, cfg: Config) -> None:
+    extractor = KeypointExtractor()
+    try:
+        DatasetCollector(cfg, extractor).collect(args.label, args.signer, args.n)
+    finally:
+        extractor.close()
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Sign language recognition")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -62,6 +70,12 @@ def main() -> None:
     p = sub.add_parser("run", help="run live recognition from the webcam")
     p.add_argument("--model", default="lstm", choices=models)
     p.set_defaults(func=cmd_run)
+
+    p = sub.add_parser("collect", help="record examples of a sign from the webcam")
+    p.add_argument("--label", required=True)
+    p.add_argument("--signer", required=True)
+    p.add_argument("--n", type=int, default=30)
+    p.set_defaults(func=cmd_collect)
 
     args = parser.parse_args()
     args.func(args, Config())
