@@ -5,6 +5,7 @@ class FeatureBuilder:
     POSE_POINTS = 33
     _L_SHOULDER = 11
     _R_SHOULDER = 12
+    HANDS_SLICE = slice(0, 2 * HAND_POINTS * 3)  # part of the vector holding both hands
 
     @classmethod
     def vector_size(cls) -> int:
@@ -27,3 +28,7 @@ class FeatureBuilder:
 
         return np.concatenate([left.ravel(), right.ravel(), pose.ravel()])
 
+    @classmethod
+    def hands_visible(cls, vector: np.ndarray) -> bool:
+        """True if at least one hand is present in the vector."""
+        return bool(np.any(vector[cls.HANDS_SLICE] != 0))
