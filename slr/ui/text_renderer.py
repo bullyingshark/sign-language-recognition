@@ -36,3 +36,27 @@ class TextRenderer:
             ImageDraw.Draw(image).text(org, text, font=self._font, fill=color_bgr[::-1])
             frame[:] = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
             return frame
+
+    def _text_width(self, text: str) -> float:
+        """Width of the text in pixels for the current font."""
+        if self._font is None:
+            return cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0][0]
+        return self._font.getlength(text)
+
+    def wrap(self, text: str, max_width: int) -> list[str]:
+        """Split text into lines so that each line fits into max_width pixels."""
+        words = text.split()
+        lines: list[str] = []
+        current = ""
+        for word in words:
+            candidate = f"{current} {word}".strip()
+            if self._text_width(candidate) > max_width and current:
+                # the line is full: save `current`, start a new line with `word`
+                lines.append(current)
+                current = word
+            else:
+                # the word fits: `current` becomes the candidate
+                current = candidate
+        if current:
+            lines.append(current)
+        return lines
