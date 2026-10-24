@@ -15,6 +15,10 @@ class RealtimeApp:
     Keys: Q - quit, C - clear text.
     """
 
+    MAX_LINES = 3  # how many last lines of the sentence are shown
+    LINE_HEIGHT = 36  # pixels per line (font size 30 + spacing)
+
+
     def __init__(self, config: Config, extractor: KeypointExtractor,
                  predictor: SignPredictor, sentence: SentenceBuilder) -> None:
         self._cfg = config
@@ -24,11 +28,17 @@ class RealtimeApp:
         self._text = TextRenderer(30)
 
     def _render(self, frame, prediction) -> None:
-        h = frame.shape[0]
-        cv2.rectangle(frame, (0, h - 90), (frame.shape[1], h), (0, 0, 0), -1)
+        h, w = frame.shape[:2]
+        lines = self._text.wrap(self._sentence.text, w - 20)[-self.MAX_LINES:]
+
         hint = f"{prediction.label} ({prediction.confidence:.0%})" if prediction else "..."
         self._text.draw(frame, hint, (10, 10), (0, 255, 255))  # current sign, top-left
-        self._text.draw(frame, self._sentence.text, (10, h - 80), (255, 255, 255))  # sentence, bottom bar
+
+        if lines:
+            bar_h = len(lines) * self.LINE_HEIGHT + 20  # bar height from the line count
+            cv2.rectangle(frame, (0, h - bar_h), (w, h), (0, 0, 0), -1)
+            for i, line in enumerate(lines):
+                self._text.draw(frame, line, (10, h - bar_h + 10 + i * self.LINE_HEIGHT), (255, 255, 255))
 
     def run(self) -> None:
         with VideoSource(self._cfg.camera_index, self._cfg.frame_width,
