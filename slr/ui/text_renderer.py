@@ -10,6 +10,13 @@ class TextRenderer:
         "/System/Library/Fonts/Supplemental/Arial.ttf",  # macOS
     )
 
+    # Fallback (used only when no TTF font is found): cv2.putText settings.
+    # Shared by draw() and _text_width() so the measured width matches the drawn text.
+    _CV_FONT = cv2.FONT_HERSHEY_SIMPLEX  # Latin only, no Cyrillic
+    _CV_SCALE = 0.8
+    _CV_THICKNESS = 2
+    _CV_BASELINE_SHIFT = 24  # putText anchors at the text baseline, Pillow at the top-left
+
     def __init__(self, size: int = 30) -> None:
         """Loads a font of the given size, trying several known paths."""
         self._font = self._load_font(size)
@@ -28,8 +35,8 @@ class TextRenderer:
              color_bgr: tuple[int, int, int] = (255, 255, 255)) -> np.ndarray:
         """Draws text at position org (top-left corner). Modifies frame in place."""
         if self._font is None:
-            cv2.putText(frame, text, (org[0], org[1] + 24),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, color_bgr, 2)
+            cv2.putText(frame, text, (org[0], org[1] + self._CV_BASELINE_SHIFT),
+                        self._CV_FONT, self._CV_SCALE, color_bgr, self._CV_THICKNESS)
             return frame
         else:
             image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
@@ -41,7 +48,7 @@ class TextRenderer:
         """Width of the text in pixels for the current font."""
         if self._font is None:
             return cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0][0]
-        return self._font.getlength(text)
+        return cv2.getTextSize(text, self._CV_FONT, self._CV_SCALE, self._CV_THICKNESS)[0][0]
 
     def wrap(self, text: str, max_width: int) -> list[str]:
         """Split text into lines so that each line fits into max_width pixels."""
