@@ -13,6 +13,7 @@ class FeatureBuilder:
 
     @classmethod
     def build(cls, left: np.ndarray, right: np.ndarray, pose: np.ndarray) -> np.ndarray:
+        left, right, pose = (np.array(a, dtype=np.float32) for a in (left, right, pose))
         l_shoulder = pose[cls._L_SHOULDER]
         r_shoulder = pose[cls._R_SHOULDER]
 

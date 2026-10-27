@@ -19,12 +19,15 @@ class KeypointExtractor:
         results = self._holistic.process(rgb)
         return results
 
-    def to_vector(self, results) -> np.ndarray:
+    def to_landmarks(self, results) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Raw MediaPipe result -> (left_hand, right_hand, pose); zeros where not detected."""
         left = self._to_array(results.left_hand_landmarks, FeatureBuilder.HAND_POINTS)
         right = self._to_array(results.right_hand_landmarks, FeatureBuilder.HAND_POINTS)
         pose = self._to_array(results.pose_landmarks, FeatureBuilder.POSE_POINTS)
+        return left, right, pose
 
-        return FeatureBuilder.build(left, right, pose)
+    def to_vector(self, results) -> np.ndarray:
+        return FeatureBuilder.build(*self.to_landmarks(results))
 
     @staticmethod
     def _to_array(landmark_list, n_points: int) -> np.ndarray:
