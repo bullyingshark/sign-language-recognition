@@ -13,7 +13,7 @@ class Config:
     frame_height: int = 480
     confidence_threshold: float = 0.8
     smoothing_window: int = 5
-    word_cooldown_sec: float = 2.0
+    release_frames: int = 10   # frames without hands before the last word may be repeated
 
     def checkpoint_for(self, model_name: str) -> Path:
         file_name = f"{model_name}.pt"
