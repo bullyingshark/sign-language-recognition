@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from collections import Counter
 
 from torch.utils.data import DataLoader
 
@@ -20,7 +21,15 @@ from slr.training.seed import set_seed
 def cmd_train(args, cfg: Config) -> None:
     set_seed(args.seed)
     repo = DatasetRepository(cfg.data_dir)
+
     print(f"Signs: {len(repo.label_names)} | signers: {repo.signers} | samples: {len(repo.records)}")
+
+    counts = Counter(r.label for r in repo.records)  # label index -> number of examples
+    per_sign = [counts.get(i, 0) for i in range(len(repo.label_names))]  # 0 for signs with no files
+    print(f"Examples per sign: min {min(per_sign)} | max {max(per_sign)}")
+    few = [name for name, n in zip(repo.label_names, per_sign) if n < 10]
+    if few:
+        print(f"WARNING: fewer than 10 examples for: {few}")
 
     # person-independent split if --val-signers is given, otherwise random
     if args.val_signers:
