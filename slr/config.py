@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from dataclasses import dataclass, replace
 
 @dataclass(frozen=True)
 class Config:
@@ -18,3 +19,9 @@ class Config:
         file_name = f"{model_name}.pt"
         path = self.checkpoint_dir / file_name
         return path
+
+    def for_dataset(self, name: str) -> "Config":
+        """Copy of this config whose data and checkpoints live in a per-dataset subfolder."""
+        # data_dir.parent is "data" (from data/raw), so the result is data/<name>
+        return replace(self, data_dir=self.data_dir.parent / name,
+                       checkpoint_dir=self.checkpoint_dir / name)
