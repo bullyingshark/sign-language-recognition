@@ -14,9 +14,11 @@ from slr.inference.sentence import SentenceBuilder
 from slr.keypoints.extractor import KeypointExtractor
 from slr.models.arch import build_model
 from slr.training.trainer import Trainer
+from slr.training.seed import set_seed
 
 
 def cmd_train(args, cfg: Config) -> None:
+    set_seed(args.seed)
     repo = DatasetRepository(cfg.data_dir)
     print(f"Signs: {len(repo.label_names)} | signers: {repo.signers} | samples: {len(repo.records)}")
 
@@ -82,6 +84,7 @@ def main() -> None:
     p.add_argument("--epochs", type=int, default=40)
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--val-signers", default="", help="comma-separated held-out signer ids")
+    p.add_argument("--seed", type=int, default=0, help="random seed for reproducible runs")
     add_dataset_arg(p)
     p.set_defaults(func=cmd_train)
 
