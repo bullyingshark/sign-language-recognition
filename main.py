@@ -57,7 +57,7 @@ def cmd_run(args, cfg: Config) -> None:
     try:
         predictor = SignPredictor(cfg.checkpoint_for(args.model),
                                   cfg.confidence_threshold, cfg.smoothing_window)
-        sentence = SentenceBuilder(cfg.word_cooldown_sec)
+        sentence = SentenceBuilder(cfg.release_frames)
         RealtimeApp(cfg, extractor, predictor, sentence).run()
     finally:
         extractor.close()

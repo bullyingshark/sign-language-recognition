@@ -6,6 +6,7 @@ from slr.inference.sentence import SentenceBuilder
 from slr.keypoints.extractor import KeypointExtractor
 from slr.ui.text_renderer import TextRenderer
 from slr.video.camera import VideoSource
+from slr.keypoints.features import FeatureBuilder
 
 
 class RealtimeApp:
@@ -48,9 +49,10 @@ class RealtimeApp:
                 if frame is None:
                     break
 
-                # 1. frame -> landmarks -> feature vector -> sliding window -> prediction
                 results = self._extractor.process(frame)
-                self._predictor.push(self._extractor.to_vector(results))
+                vector = self._extractor.to_vector(results)
+                self._predictor.push(vector)
+                self._sentence.observe_hands(FeatureBuilder.hands_visible(vector))
                 current = self._predictor.predict()
 
                 # 2. add the word to the sentence; if accepted, restart the window
